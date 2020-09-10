@@ -1,0 +1,138 @@
+---
+title: "Assignment 1"
+author: "Jocelyn Tsai"
+date: "9/7/2020"
+output: 
+  html_document:
+    toc: true
+    toc_float: true 
+---
+
+```{r, message = FALSE}
+library(tidycensus)
+library(tidyverse)
+```
+
+## 1. Introduction
+
+Living in California and experiencing wildfires every year made me interested in exploring the relationship between annual rainfall, mean temperature, the number of wildfires and acres burned, and if they correspond to years with extreme heat wave or high unemployment rate. Instead of analyzing a specific State, I am looking at the Country level, gathering data for the entire United States. It would also be interesting to see if there is a trend or pattern of wildfires when analyzing historical yearly data. 
+
+The unit of my analysis is yearly statistics, while the unit of observation is the United States. The sample population is a set of years ranging from 1929 to 2015. The final combined table contains 87 rows of observations.
+
+
+## 2. Variables Used and Calculated
+
+The 7 variables that I defined are:
+
+  1. Year (continuous): Year 
+  2. Annual Rainfall (continuous): Total_Rainfall_mm
+  3. Mean Annual Temperature (continuous): Mean_Temp_Celsius
+  4. Number of Wildfires (continuous): Num_Fires
+  5. Number of Acres Burned (continuous): Acres_Burned
+  6. Years with Extreme Heat Wave (categorical): Extreme_Heat_Wave
+  7. Years with High Unemployment (categorical): High_Unemployment
+
+
+### 2.1 Annual Rainfall 
+
+Data from: https://climateknowledgeportal.worldbank.org/download-data
+
+Originally, the downloaded data had separated rainfall statistics for each month within a year, so I grouped the rows by Year and summed the amount of monthly rainfall (in millimeters) in an entire year. I added up rainfall in each month to obtain total annual rainfall. The new table for the variable is named: annual_rainfall. 
+
+```{r, message=FALSE}
+rainfall <- read_csv("rainfall.csv")
+
+annual_rainfall <- rainfall %>% 
+  group_by(Year) %>% 
+  summarise(Total_Rainfall_mm = sum(Rainfall_mm))
+
+annual_rainfall
+```
+### 2.2 Mean Annual Temperature
+
+Data from:https://climateknowledgeportal.worldbank.org/download-data
+
+The original data shows monthly average temperature, so I grouped the months into years by taking the mean of the monthly average temperatures to get mean annual temperature (in Celsius). The new table for the variable is named: mean_annual_temperature. 
+
+
+```{r, message=FALSE}
+temperature <- read_csv("temperature.csv")
+
+mean_annual_temperature <- temperature %>%
+  group_by(Year) %>%
+  summarise(Mean_Temp_Celsius=mean(Temperature_Celsius))
+mean_annual_temperature
+```
+
+### 2.3 Number of Wildfires and Acres Burned 
+
+Data from: https://www.nifc.gov/fireInfo/fireInfo_stats_totalFires.html
+
+The National Interagency Fire Center documented yearly total wildfires and acres burned since 1926. Since the rows are already listed in Years, I only renamed the original columns "Fires" and "Acres" to "Num_Fires" and "Acres_Burned". The new table for the two wildfire variables is named: wildfires. 
+
+```{r, message=FALSE}
+wildfires <- read_csv("wildfires.csv")
+
+wildfires <- wildfires %>%
+  rename(Num_Fires=Fires, Acres_Burned=Acres)
+
+wildfires
+```
+
+### 2.4 Years with Extreme Heat Wave
+
+Data from: https://ourworldindata.org/grapher/heat-wave-index-usa?tab=table&year=latest&time=1900..latest
+
+I wanted to look at specific years that experienced extreme heat waves as a categorical variable to answer the question of whether there is more intense wildfire during years with extreme heat waves. The data from NOAA displayed the annual Heat Wave Index in the U.S.; "this index defines a heat wave as a period lasting at least four days with an average temperature that would only be expected to occur once every 10 years, based on the historical record". I defined years with Extreme Heat Wave as any year with a Heat Wave Index above 20. If the Index is above 20, then I categorize the year as Extreme_Heat_Wave = TRUE, but if the heat wave index is not above 20, then the Extreme_Heat_Wave column would show as FALSE. The new table for the variable is named: heat_wave_index.
+
+```{r, message=FALSE}
+heat_wave_index <- read_csv("heat_wave_index.csv")
+
+heat_wave_index <- heat_wave_index %>%
+  select(Year,Heat_Wave_Index)
+  
+heat_wave_index$Heat_Wave_Index <- with(heat_wave_index, ifelse(Heat_Wave_Index > 20, TRUE, FALSE))
+
+heat_wave_index <- heat_wave_index %>%
+  rename(Extreme_Heat_Wave=Heat_Wave_Index)
+
+heat_wave_index
+```
+
+### 2.5 Years with High Unemployment Rate 
+
+Data from:https://www.thebalance.com/unemployment-rate-by-year-3305506
+
+I am also curious to see if high unemployment rate in specific years has any relationship to any of the other variables. I defined the variable High_Unemployment as an unemployment rate of above 5 percent because according to Sylvia Allegretto, an economist at UC Berkeley, a healthy U.S. economy needs an unemployment rate of 5 percent. If unemployment rate is above 5 percent for a certain year, then it is categorized as TRUE, or that it has High Unemployment Rate.The new table for the variable is named: unemployment_rate.
+
+```{r, message=FALSE}
+unemployment_rate <- read_csv("unemployment_rate.csv")
+
+unemployment_rate$Unemployment_Rate_Percent <- with(unemployment_rate, ifelse(Unemployment_Rate_Percent>5, TRUE, FALSE))
+
+unemployment_rate <- unemployment_rate %>%
+  rename(High_Unemployment=Unemployment_Rate_Percent)
+
+unemployment_rate
+```
+
+## 3. Joining Tables
+
+Since all of the individual tables above have a "Year" column, I joined the tables by using the inner_join function to create a final combined table named all_data. I used options(tibble.width = Inf) to display all the columns in my table on the same page. 
+
+```{r, message=FALSE}
+data_1 <- inner_join(annual_rainfall, mean_annual_temperature)
+data_2 <- inner_join(data_1, wildfires)
+data_3 <- inner_join(data_2,heat_wave_index)
+all_data <- inner_join(data_3, unemployment_rate)
+
+options(tibble.width = Inf)
+all_data 
+```
+
+
+
+
+  
+
+
