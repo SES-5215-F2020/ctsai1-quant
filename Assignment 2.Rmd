@@ -1,0 +1,302 @@
+---
+title: "Assignment 2"
+author: "Jocelyn Tsai"
+date: "9/13/2020"
+output: 
+  html_document:
+    toc: true
+    toc_float: true 
+---
+
+I first loaded the tidyverse and ggplot2 libraries:
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+I then loaded my dataset from Assignment 1. Referencing from Catherine's example assignment, I used the "attach" function to connect my dataframe from Assignment 1 to the search path. Now I can refer to my variables without specifying the dataframe that they're in every time.
+
+```{r, message=FALSE}
+US_data <- read_csv("wildfire_dataset.csv")
+attach(US_data)
+```
+
+List of variables from Assignment 1:
+(I am not showing "Year" as a variable in this assignment because it does that make sense to graph the distribution of "Year" since there's only 1 value every year from 1929 to 2015)
+
+1. Annual Rainfall in the US (continuous): Total_Rainfall_mm
+2. Mean Annual Temperature in the US (continuous): Mean_Temp_Celsius
+3. Number of Wildfires in the US each year (continuous): Num_Fires
+4. Number of Acres Burned in the US each year (continuous): Acres_Burned
+5. Years with Extreme Heat Wave in the US (categorical): Extreme_Heat_Wave
+6. Years with High Unemployment in the US (categorical): High_Unemployment
+
+## 1. Statistics in a Table for All Continuous Variables
+
+Statistics include: sample mean, median, standard deviation, inter-quartile range, 95-percent confidence interval for population mean
+
+I used the summary() function to get a quick distribution summary for each of the continuous variables. Since the summary () function does not include standard deviation and it cannot find the 95 percent confidence interval, I also used the sd() and t.test() functions. I then combined the cleaned up statistic values using prettyNum() into a list for each variable.  
+
+### Continuous Variable 1: Annual Rainfall (mm) in the US
+
+```{r}
+summary(Total_Rainfall_mm)
+rain_summary <- summary(Total_Rainfall_mm)
+rain_sd <- sd(Total_Rainfall_mm)
+rain_95confidence <- t.test(Total_Rainfall_mm)
+```
+
+```{r}
+annual_rainfall <- c(prettyNum(rain_summary["Mean"], digits =4),
+                     prettyNum(rain_summary["Median"], digits =4),
+                     prettyNum(rain_sd, digits = 4),
+                     paste(prettyNum(rain_summary["1st Qu."], digits =4), "to",                                             prettyNum(rain_summary["3rd Qu."], digits =4)),
+                     paste(prettyNum(rain_95confidence$conf.int[1], digits=4), "to",
+                           prettyNum(rain_95confidence$conf.int[2], digits=4)))
+annual_rainfall
+```
+
+
+### Continuous Variable 2: Mean Annual Temperature (celsius) in the US
+
+```{r}
+summary(Mean_Temp_Celsius)
+temp_summary <- summary(Mean_Temp_Celsius)
+temp_sd <- sd(Mean_Temp_Celsius)
+temp_95confidence <- t.test(Mean_Temp_Celsius)
+```
+
+```{r}
+mean_annual_temp <- c(prettyNum(temp_summary["Mean"], digits =3),
+                      prettyNum(temp_summary["Median"], digits =3),
+                      prettyNum(temp_sd, digits = 3),
+                      paste(prettyNum(temp_summary["1st Qu."], digits =3), "to",                                             prettyNum(temp_summary["3rd Qu."], digits =3)),
+                      paste(prettyNum(temp_95confidence$conf.int[1], digits=3), "to",
+                            prettyNum(temp_95confidence$conf.int[2], digits=3)))
+mean_annual_temp
+```
+
+
+### Continuous Variable 3: Number of Wildfires in the US each year
+
+```{r}
+summary(Num_Fires)
+num_fire_summary <- summary(Num_Fires)
+num_fire_sd <- sd(Num_Fires)
+num_fire_95confidence <- t.test(Num_Fires)
+```
+
+```{r}
+num_fire <- c(prettyNum(num_fire_summary["Mean"], digits =3),
+              prettyNum(num_fire_summary["Median"], digits =3),
+              prettyNum(num_fire_sd, digits = 3),
+              paste(prettyNum(num_fire_summary["1st Qu."], digits =3), "to",                                         prettyNum(num_fire_summary["3rd Qu."], digits =3)),
+              paste(prettyNum(num_fire_95confidence$conf.int[1], digits=3), "to",
+                    prettyNum(num_fire_95confidence$conf.int[2], digits=3)))
+num_fire
+```
+
+### Continuous Variable 4: Number of Acres Burned in the US each year
+
+```{r}
+summary(Acres_Burned)
+acres_burned_summary <- summary(Acres_Burned)
+acres_burned_sd <- sd(Acres_Burned)
+acres_burned_95confidence <- t.test(Acres_Burned)
+```
+
+```{r}
+burned <- c(prettyNum(acres_burned_summary["Mean"], digits =3),
+            prettyNum(acres_burned_summary["Median"], digits =3),
+            prettyNum(acres_burned_sd, digits = 3),
+            paste(prettyNum(acres_burned_summary["1st Qu."], digits =3), "to",                                     prettyNum(acres_burned_summary["3rd Qu."], digits =3)),
+            paste(prettyNum(acres_burned_95confidence$conf.int[1], digits=3), "to",
+                  prettyNum(acres_burned_95confidence$conf.int[2], digits=3)))
+burned
+```
+
+### Display all four continuous variables in a formmated table:
+
+```{r}
+stats <- c("Sample Mean",
+                "Median",
+                "Standard Deviation",
+                "Interquartile Range",
+                "95% Confidence Interval (Population Mean)")
+stats
+```
+
+```{r}
+summary_table <- tibble("Statistics" =stats, 
+       "Annual Rainfall (mm)" =annual_rainfall,
+       "Mean Annual Temperature (celsius)" =mean_annual_temp,
+       "Number of Fires (per year)" =num_fire,
+       "Acres Land Burned (per year)" =burned)
+summary_table
+```
+
+
+```{r}
+knitr::kable(summary_table, caption= "Statistics of Yearly Environmental Data in the US")
+```
+
+
+## 2. Histogram of Distribution for each Continuous Variable
+
+### Continuous Variable 1: Annual Rainfall (mm) in the US
+
+a. Sample Mean: 649.7
+b. Median: 651.8
+c. Standard Deviation: 41.96
+d. Interquartile Range: 627.3 to 676.3	
+e. 95% Confidence Interval: 640.8 to 658.7
+
+The distribution of Annual Rainfall is slightly skewed to the left, with a median larger than the sample mean. There is only one outlier (a year) that has extreme rainfall of more than 750 milimeters comparing to other years. 
+
+```{r, message=FALSE}
+rain_hist <- ggplot(US_data, aes(x= Total_Rainfall_mm))+
+  geom_histogram()
+
+rain_hist+
+  theme_light()+
+  scale_x_continuous(name= "Annual Rainfall (mm)")+
+  scale_y_continuous(name= "Number of Years in Sample")
+```
+
+
+### Continuous Variable 2: Mean Annual Temperature (celsius) in the US
+
+a. Sample Mean: 7.1
+b. Median: 7.06
+c. Standard Deviation: 0.497
+d. Interquartile Range: 6.72 to 7.49
+e. 95% Confidence Interval: 7 to 7.21
+
+The distribution of Mean Annual Temperature is slightly skewed to the right, with a mean larger than the median. Values above 7.5 bring the average of the distribution up, while more observations are concentrated on the left side. 
+
+```{r, message=FALSE}
+temp_hist <- ggplot(US_data, aes(x= Mean_Temp_Celsius))+
+  geom_histogram()
+
+temp_hist+
+  theme_light()+
+  scale_x_continuous(name= "Mean Annual Temperature (Celsius)")+
+  scale_y_continuous(name= "Number of Years in Sample")
+```
+
+
+### Continuous Variable 3: Number of Wildfires in the US each year
+
+a. Sample Mean: 126770
+b. Median: 117957
+c. Standard Deviation: 55922
+d. Interquartile Range: 80075 to 173138
+e. 95% Confidence Interval: 114852 to 138689
+
+The distribution of the Number of Wildfires is skewed to the right, with a mean larger than the median. There is a greater number of observations closer to the left side of the histogram. 
+
+```{r, message=FALSE}
+fires_hist <- ggplot(US_data, aes(x= Num_Fires))+
+  geom_histogram()
+
+fires_hist+
+  theme_light()+
+  scale_x_continuous(name= "Number of Wildfires")+
+  scale_y_continuous(name= "Number of Years in Sample")
+```
+
+### Continuous Variable 4: Number of Acres Burned in the US each year
+
+a. Sample Mean: 11477719
+b. Median: 5260825
+c. Standard Deviation: 13050569
+d. Interquartile Range: 3279282 to 14792000
+e. 95% Confidence Interval: 8696266 to 14259173
+
+The sample mean is significantly larger than the median, so the histogram is skewed positively to the right. There is a long tail trailing on the right side of the graph, bringing the average of the distribution higher. 
+
+```{r, message=FALSE}
+options(scipen = 999)
+burned_hist <- ggplot(US_data, aes(x= Acres_Burned))+
+  geom_histogram()
+
+burned_hist+
+  theme_light()+
+  scale_x_continuous(name= "Number of Acres Burned")+
+  scale_y_continuous(name= "Number of Years in Sample")
+```
+
+
+## 3. Categorical Variables
+
+### Categorical Variable 1: Years with Extreme Heat Wave
+
+I first used table() to get the number of observations in each category:
+
+```{r}
+table(US_data$Extreme_Heat_Wave)
+```
+
+I calculated the proportion of the sample (years) that has Extreme Heat Wave:
+
+```{r}
+mean(US_data$Extreme_Heat_Wave == "TRUE")
+```
+
+I then used the t.test() function to get the 95 percent confidence interval for the proportion that has extreme heat wave.
+
+```{r}
+t.test(US_data$Extreme_Heat_Wave == "TRUE")
+```
+
+Here is a bar chart showing the number of years that have extreme heat wave versus years without extreme heat wave. 
+
+```{r}
+ggplot(US_data, aes(x = Extreme_Heat_Wave, fill= Extreme_Heat_Wave)) +
+  geom_bar() +
+  scale_y_continuous(name = "Number of Years") +
+  scale_x_discrete(name = "Extreme Heat Wave",
+                       labels = c("FALSE",
+                                  "TRUE")) +
+  scale_fill_discrete(name = element_blank(),
+                        labels = c("FALSE",
+                                   "TRUE")) +
+  theme_light() 
+```
+
+
+### Categorical Variable 2: Years with High Unemployment
+
+I first used table() to get the number of observations in each category:
+
+```{r}
+table(US_data$High_Unemployment)
+```
+
+I calculated the proportion of the sample (years) that has High Unemployment:
+
+```{r}
+mean(US_data$High_Unemployment == "TRUE")
+```
+
+I then used the t.test() function to get the 95 percent confidence interval for the proportion that has extreme heat wave.
+
+```{r}
+t.test(US_data$High_Unemployment == "TRUE")
+```
+
+Here is a bar chart showing the number of years that have high unemployment rate versus years that don't have high unemployment rate. 
+
+```{r}
+ggplot(US_data, aes(x = High_Unemployment, fill= High_Unemployment)) +
+  geom_bar() +
+  scale_y_continuous(name = "Number of Years") +
+  scale_x_discrete(name = "High Unemployment",
+                       labels = c("FALSE",
+                                  "TRUE")) +
+  scale_fill_discrete(name = element_blank(),
+                        labels = c("FALSE",
+                                   "TRUE")) +
+  theme_light() 
+```
+
