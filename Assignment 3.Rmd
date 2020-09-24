@@ -1,0 +1,482 @@
+---
+title: "Assignment 3"
+author: "Jocelyn Tsai"
+date: "9/21/2020"
+output: 
+  html_document:
+    theme: yeti
+    highlight: haddock
+    toc: true
+    toc_float: true
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r, message=FALSE}
+US_data <- read_csv("wildfire_dataset.csv")
+```
+
+```{r}
+attach(US_data)
+```
+
+### Topic:
+
+I want to explore the relationship between annual rainfall, mean annual temperature, Number of wildfires, number of acres burned, years with extreme heat wave, and years with high unemployment in the United States, looking at the years 1929 to 2015. 
+
+List of Variables:
+1. Annual Rainfall in the US (continuous): Total_Rainfall_mm
+2. Mean Annual Temperature in the US (continuous): Mean_Temp_Celsius
+3. Number of Wildfires in the US each year (continuous): Num_Fires
+4. Number of Acres Burned in the US each year (continuous): Acres_Burned
+5. Years with Extreme Heat Wave in the US (categorical): Extreme_Heat_Wave
+6. Years with High Unemployment in the US (categorical): High_Unemployment
+
+## Relationships between continuous variables (correlation test)
+
+### Correlation 1: Annual Rainfall and Mean Annual Temperature:
+
+There is not a statistically significant relationship between annual rainfall and mean annual temperature as the 95 percent confidence interval crosses 0. 
+
+```{r}
+correlation_1 <- cor.test(US_data$Total_Rainfall_mm, US_data$Mean_Temp_Celsius)
+correlation_1
+```
+
+```{r}
+ggplot(US_data, aes(x = Total_Rainfall_mm, y = Mean_Temp_Celsius)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Annual Rainfall (mm)")+
+  scale_y_continuous(name = "Mean Annual Temperature (celsius)")+
+  annotate(geom = "text", x = 550, y = 10, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_1$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_1$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+### Correlation 2: Annual Rainfall and Number of Wildfires in a year:
+
+The relationship between annual rainfall and number of wildfires in a year is statistically significant as the p-value is a lot smaller than 0.05. There is a strong negative correlation at the 95-percent confidence level. The more amount of annual rainfall generally indicates fewer number of wildfires in the US (shown clearly on the graph). 
+
+```{r}
+correlation_2 <- cor.test(US_data$Total_Rainfall_mm, US_data$Num_Fires)
+correlation_2
+```
+
+```{r}
+ggplot(US_data, aes(x = Total_Rainfall_mm, y = Num_Fires)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Annual Rainfall (mm)")+
+  scale_y_continuous(name = "Number of Wildfires")+
+  annotate(geom = "text", x = 550, y = 250000, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_2$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_2$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+### Correlation 3: Annual Rainfall and Number of Acres Burned in a year:
+
+Similar to the previous correlation, relationship between annual rainfall and number of acres burned in a year is also statistically significant because of a low p-value. There is a negative correlation as well. 
+
+```{r}
+correlation_3 <- cor.test(US_data$Total_Rainfall_mm, US_data$Acres_Burned)
+correlation_3 
+```
+
+```{r}
+options(scipen = 999)
+ggplot(US_data, aes(x = Total_Rainfall_mm, y = Acres_Burned)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Annual Rainfall (mm)")+
+  scale_y_continuous(name = "Number of Acres Burned")+
+  annotate(geom = "text", x = 550, y = 55000000, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_3$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_3$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+### Correlation 4: Mean Annual Temperature and Number of Wildfires in a year:
+
+The most surprising correlation that I found was that there is a weak, but statistically significant relationship between mean annual temperature and number of wildfires in a year. I would expect that there are more wildfires during years that have a higher mean annual temperature but the results show the opposite. There is a negative correlation at a 95-percent confidence level, which indicates that when mean annual temperature is higher, there are fewer number of wildfires in the US. However, this could be because I only had 87 years of data, and there are outliers skewing the representation. 
+
+```{r}
+correlation_4 <- cor.test(US_data$Mean_Temp_Celsius, US_data$Num_Fires)
+correlation_4 
+```
+
+```{r}
+ggplot(US_data, aes(x = Mean_Temp_Celsius, y = Num_Fires)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Mean Annual Temperature (celsius)")+
+  scale_y_continuous(name = "Number of Wildfires")+
+  annotate(geom = "text", x = 6, y = 250000, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_4$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_4$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+### Correlation 5: Mean Annual Temperature and Number of Acres Burned in a year:
+
+The relationship between mean annual temperature and acres burned a year is not statistically significant and there is no correlation. 
+
+```{r}
+correlation_5 <- cor.test(US_data$Mean_Temp_Celsius, US_data$Acres_Burned)
+correlation_5 
+```
+
+```{r}
+options(scipen = 999)
+ggplot(US_data, aes(x = Mean_Temp_Celsius, y = Acres_Burned)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Mean Annual Temperature (celsius)")+
+  scale_y_continuous(name = "Number of Acres Burned")+
+  annotate(geom = "text", x = 6, y = 55000000, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_5$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_5$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+### Correlation 6: Number of Wildfires and Number of Acres Burned in a year:
+
+There is a clear, positive correlation between number of wildfires and number of acres burned. P-value is extremely small, and correlation is 0.5. More wildfires generally indicate more acres burned in a year. 
+
+```{r}
+correlation_6 <- cor.test(US_data$Num_Fires, US_data$Acres_Burned)
+correlation_6 
+```
+
+```{r}
+options(scipen = 999)
+ggplot(US_data, aes(x = Num_Fires, y = Acres_Burned)) +
+  geom_point(size = 0.5, alpha = 0.25, position = "jitter") +
+  geom_smooth() +
+  theme_light() +
+  scale_x_continuous(name = "Number of Wildfires")+
+  scale_y_continuous(name = "Number of Acres Burned")+
+  annotate(geom = "text", x = 0, y = 55000000, 
+           label = paste("Correlation (95-percent confidence):",
+                         prettyNum(correlation_6$conf.int[1], digits = 2), 
+                         "to",
+                         prettyNum(correlation_6$conf.int[2], digits = 2)),
+           hjust = 0)
+```
+
+
+## Relationship between a continuous variable and a binary variable (two-sample t.test)
+
+### Extreme Heat Wave and continuous variables:
+
+Difference 1: Do years with extreme heat wave have a higher or lower annual rainfall than years without extreme heat wave? 
+
+Finding: Statistically significant. Years with extreme heat wave have lower annual rainfall. 
+
+```{r}
+difference_1 = t.test(Total_Rainfall_mm ~ Extreme_Heat_Wave, 
+                    data = US_data)
+difference_1
+```
+
+```{r}
+ggplot(US_data, aes(x = Extreme_Heat_Wave, y = Total_Rainfall_mm)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there extreme heat wave during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Annual Rainfall (mm)")+
+  annotate(geom = "text", x = 1.5, y = 700, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in milimeters:\n",
+                         prettyNum(abs(difference_1$conf.int[1]), 
+                                   digits = 3), " to ",
+                         prettyNum(abs(difference_1$conf.int[2]), 
+                                   digits = 3), 
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_1$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_1$estimate[1], digits = 4))) +
+  annotate(geom = "text", x = 2, y = difference_1$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_1$estimate[2], digits = 4)))
+```
+
+
+Difference 2: Do years with extreme heat wave have a higher or lower mean annual temperature than years without extreme heat wave? 
+
+Finding: Statistically significant. Years with extreme heat wave have higher mean annual temperature. 
+
+```{r}
+difference_2 = t.test(Mean_Temp_Celsius ~ Extreme_Heat_Wave, 
+                    data = US_data)
+difference_2
+```
+
+```{r}
+ggplot(US_data, aes(x = Extreme_Heat_Wave, y = Mean_Temp_Celsius)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there extreme heat wave during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Mean Annual Temperature (celsius)")+
+  annotate(geom = "text", x = 1.5, y = 8.5, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in celsius:\n",
+                         prettyNum(abs(difference_2$conf.int[2]), 
+                                   digits = 2), " to ",
+                         prettyNum(abs(difference_2$conf.int[1]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_2$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_2$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_2$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_2$estimate[2], digits = 3)))
+```
+
+
+Difference 3: Do years with extreme heat wave have a higher or lower number of wildfires than years without extreme heat wave? 
+
+Finding: Statistically insignificant. 
+
+```{r}
+difference_3 = t.test(Num_Fires ~ Extreme_Heat_Wave, 
+                    data = US_data)
+difference_3
+```
+
+```{r}
+ggplot(US_data, aes(x = Extreme_Heat_Wave, y = Num_Fires)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there extreme heat wave during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Number of Wildfires")+
+  annotate(geom = "text", x = 1.5, y = 250000, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in numbers:\n",
+                         prettyNum(abs(difference_3$conf.int[2]), 
+                                   digits = 2), " to ",
+                         prettyNum(abs(difference_3$conf.int[1]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_3$estimate[1], size = 2.5,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_3$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_3$estimate[2], size = 2.5,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_3$estimate[2], digits = 3)))
+```
+
+
+Difference 4: Do years with extreme heat wave have a higher or lower number of acres burned than years without extreme heat wave? 
+
+Finding: Statistically significant. Years with extreme heat wave have more number of acres burned. 
+
+```{r}
+difference_4 = t.test(Acres_Burned ~ Extreme_Heat_Wave, 
+                    data = US_data)
+difference_4
+```
+
+```{r}
+ggplot(US_data, aes(x = Extreme_Heat_Wave, y = Acres_Burned)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there extreme heat wave during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Number of Acres Burned")+
+  annotate(geom = "text", x = 1.5, y = 50000000, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in numbers:\n",
+                         prettyNum(abs(difference_4$conf.int[2]), 
+                                   digits = 2), " to ",
+                         prettyNum(abs(difference_4$conf.int[1]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_4$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_4$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_4$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_4$estimate[2], digits = 3)))
+```
+
+
+### High Unemployment and continuous variables:
+
+Difference 5: Do years with high unemployment rate have a higher or lower annual rainfall than years without high unemployment rate? 
+
+Finding: Statistically insignificant. 
+
+```{r}
+difference_5 = t.test(Total_Rainfall_mm ~ High_Unemployment, 
+                    data = US_data)
+difference_5
+```
+
+```{r}
+ggplot(US_data, aes(x = High_Unemployment, y = Total_Rainfall_mm)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there high unemployment rate during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Annual Rainfall (mm)")+
+  annotate(geom = "text", x = 1.5, y = 700, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in milimeters:\n",
+                         prettyNum(abs(difference_5$conf.int[1]), 
+                                   digits = 3), " to ",
+                         prettyNum(abs(difference_5$conf.int[2]), 
+                                   digits = 3), 
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_5$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_5$estimate[1], digits = 4))) +
+  annotate(geom = "text", x = 2, y = difference_5$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_5$estimate[2], digits = 4)))
+```
+
+
+Difference 6: Do years with high unemployment rate have a higher or lower mean annual temperature than years without high unemployment rate? 
+
+Finding: Statistically insignificant. 
+
+```{r}
+difference_6 = t.test(Mean_Temp_Celsius ~ High_Unemployment, 
+                    data = US_data)
+difference_6
+```
+
+```{r}
+ggplot(US_data, aes(x = High_Unemployment, y = Mean_Temp_Celsius)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there high unemployment rate during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Mean Annual Temperature (celsius)")+
+  annotate(geom = "text", x = 1.5, y = 8.5, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in celsius:\n",
+                         prettyNum(abs(difference_6$conf.int[2]), 
+                                   digits = 2), " to ",
+                         prettyNum(abs(difference_6$conf.int[1]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_6$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_6$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_6$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_6$estimate[2], digits = 3)))
+```
+
+
+Difference 7: Do years with high unemployment rate have a higher or lower number of wildfires than years without high unemployment rate? 
+
+Finding: Statistically insignificant. 
+
+```{r}
+difference_7 = t.test(Num_Fires ~ High_Unemployment, 
+                    data = US_data)
+difference_7
+```
+
+```{r}
+ggplot(US_data, aes(x = High_Unemployment, y = Num_Fires)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there high unemployment rate during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Number of Wildfires")+
+  annotate(geom = "text", x = 1.5, y = 250000, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in numbers:\n",
+                         prettyNum(abs(difference_7$conf.int[1]), 
+                                   digits = 2)," to ",
+                         prettyNum(abs(difference_7$conf.int[2]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_7$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_7$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_7$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_7$estimate[2], digits = 3)))
+```
+
+
+Difference 8: Do years with high unemployment rate have a higher or lower number of acres burned than years without high unemployment rate? 
+
+Finding: Statistically insignificant. 
+
+```{r}
+difference_8 = t.test(Acres_Burned ~ High_Unemployment, 
+                    data = US_data)
+difference_8
+```
+
+```{r}
+ggplot(US_data, aes(x = High_Unemployment, y = Acres_Burned)) +
+  geom_violin() +
+  theme_light() +
+  scale_x_discrete(name = "Is there high unemployment rate during that year?",
+                   labels = c("No", "Yes")) +
+  scale_y_continuous(name = "Number of Acres Burned")+
+  annotate(geom = "text", x = 1.5, y = 50000000, size = 3,
+           label = paste("Difference in means\n(95% confidence)\n in numbers:\n",
+                         prettyNum(abs(difference_8$conf.int[1]), 
+                                   digits = 2), " to ",
+                         prettyNum(abs(difference_8$conf.int[2]), 
+                                   digits = 2),
+                         sep = "")) +
+  annotate(geom = "text", x = 1, y = difference_8$estimate[1], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_8$estimate[1], digits = 3))) +
+  annotate(geom = "text", x = 2, y = difference_8$estimate[2], size = 3,
+           label = paste("Mean (95% confidence):",
+                         prettyNum(difference_8$estimate[2], digits = 3)))
+```
+
+
+
+## Relationship between two categorical variables (Chi-Squared Test)
+
+### Years with Extreme Heat Wave and Years with High Unemployment Rate 
+
+There is a warning that my Chi-Squared approximation may be incorrect because in my observed data shown below, there's only 2 values (two years) that have extreme heat waves but do not have high unemployment. For the Chi-Squared Test to be accurate, there needs to be no less than 5 values in each category. However, since the p-value is 0.284, which is a lot higher than 0.05, it is safe to say that the relationship between the two categorical variables is insignificant. 
+
+```{r}
+chi_sq_1 <- chisq.test(US_data$High_Unemployment, US_data$Extreme_Heat_Wave) 
+chi_sq_1
+```
+
+```{r}
+chi_sq_1$observed
+```
+
+```{r}
+chi_sq_1$expected
+```
+
