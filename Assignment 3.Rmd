@@ -28,6 +28,7 @@ attach(US_data)
 I want to explore the relationship between annual rainfall, mean annual temperature, Number of wildfires, number of acres burned, years with extreme heat wave, and years with high unemployment in the United States, looking at the years 1929 to 2015. 
 
 List of Variables:
+
 1. Annual Rainfall in the US (continuous): Total_Rainfall_mm
 2. Mean Annual Temperature in the US (continuous): Mean_Temp_Celsius
 3. Number of Wildfires in the US each year (continuous): Num_Fires
