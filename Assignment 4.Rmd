@@ -1,0 +1,62 @@
+---
+title: "Assignment 4"
+author: "Jocelyn Tsai"
+date: "10/3/2020"
+output: 
+  html_document:
+    theme: yeti
+    highlight: haddock
+    toc: true
+    toc_float: true
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(ggplot2)
+```
+
+## List of Variables
+
+1. Annual Rainfall in the US (continuous): Total_Rainfall_mm
+2. Mean Annual Temperature in the US (continuous): Mean_Temp_Celsius
+3. Number of Wildfires in the US each year (continuous): Num_Fires
+4. Number of Acres Burned in the US each year (continuous): Acres_Burned
+5. Years with Extreme Heat Wave in the US (categorical): Extreme_Heat_Wave
+6. Years with High Unemployment in the US (categorical): High_Unemployment
+
+
+```{r, message=FALSE}
+US_data <- read_csv("wildfire_dataset.csv")
+```
+
+```{r}
+US_data
+```
+
+## Estimating a regression model
+
+Using the lm() function to do a linear regression, I am predicting the number of wildfires each year based on the annual rainfall, mean annual temperature, number of acres burned, whether the year has extreme heat wave, and whether the year has high unemployment rate. 
+
+```{r}
+model <- lm(Num_Fires ~ Total_Rainfall_mm + Mean_Temp_Celsius + High_Unemployment + Acres_Burned + Extreme_Heat_Wave, data = US_data)
+
+summary(model)
+```
+
+The multiple R-squared value shows the overall model fit for linear regression. The multiple R-squared value for this model is 0.3998, which indicates that the listed dependent variables (annual rainfall, mean annual temperature, number of acres burned, extreme heat wave, unemployment rate) explain or predict almost 40% of the variation in the number of wildfires there are each year in the US. However, according to the linear regression model, number of wildfires' relationships with unemployment rate and extreme heat wave are not statistically significant. It is also important to note that because my sample size is relatively small (only 87 samples because I could only gather data for 87 years, from year 1929 to 2015), sometimes it is hard to see a clear relationship. 
+
+Annual Rainfall has coefficient estimate of -0.03408, which indicates that when other variables in the model are controlled, for each millimeter increase in annual rainfall, the number of wildfires decreases by 0.034. With a p-value for this variable at 0.011, this difference is statistically significant at a 95% confidence level. 
+
+Mean Annual Temperature has coefficient estimate of -0.0002312, which indicates that when other variables in the model are controlled, for each degree celsius increase in mean annual temperature, the number of wildfires decreases by 0.00023. With a p-value for this variable at 0.027, this difference is statistically significant at a 95% confidence level. 
+
+Acres Burned has coefficient estimate of 0.002016, which indicates that when other variables in the model are controlled, for each additional acre burned, the number of wildfires increases by 0.002. The p-value for this variable is very low at 0.00000789; this difference is statistically significant at a 95% confidence level. 
+
+The coefficients for the categorical variable "High_UnemploymentTRUE" shown in the model above is relative to "High_UnemploymentFALSE" (FALSE means that the specific year did not have a high unemployment rate). So comparing to years without high unemployment rate, years with high unemployment rate will have 0.003628 fewer in number of wildfires a year. However, with a large P-value of 0.7265, this difference is not statistically significant at a 95% confidence level. 
+
+The coefficients for the categorical variable "Extreme_Heat_WaveTRUE" shown in the model above is relative to "Extreme_Heat_WaveFALSE" (FALSE means that the specific year did not have extreme heat wave. So comparing to years without extreme heat wave, years with extreme heat wave will have 0.0001098 fewer in number of wildfires a year. However, with a large P-value of 0.5288, this difference is not statistically significant at a 95% confidence level. 
+
+
+
+
+
+
