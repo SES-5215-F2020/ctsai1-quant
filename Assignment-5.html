@@ -1809,7 +1809,7 @@ div.tocify {
 ## F-statistic: 6.753 on 9 and 77 DF,  p-value: 4.434e-07</code></pre>
 </div>
 <div id="visualizing-models-results" class="section level2">
-<h2>Visualizing models results</h2>
+<h2>Visualizing Models Results</h2>
 <p>Graph comparing R-squared values for models 1 through 4:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>all_models_Rsquared &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">model =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>),</span>
 <span id="cb16-2"><a href="#cb16-2"></a>                   <span class="dt">R_squared =</span> <span class="kw">c</span>(<span class="kw">summary</span>(model_<span class="dv">1</span>)<span class="op">$</span>adj.r.squared,</span>

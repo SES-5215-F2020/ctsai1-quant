@@ -93,7 +93,7 @@ model_4 <- lm(Num_Fires ~ log(Total_Rainfall_mm) + Mean_Temp_Celsius + High_Unem
 summary(model_4)
 ```
 
-## Visualizing models results 
+## Visualizing Models Results 
 
 Graph comparing R-squared values for models 1 through 4: 
 
