@@ -1,0 +1,136 @@
+---
+title: "Assignment 5"
+author: "Jocelyn Tsai"
+date: "10/6/2020"
+output: 
+  html_document:
+    theme: yeti
+    highlight: haddock
+    toc: true
+    toc_float: true
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(jtools)
+library(interactions)
+library(knitr)
+```
+
+## List of variables
+
+1. Annual Rainfall in the US (continuous): Total_Rainfall_mm
+2. Mean Annual Temperature in the US (continuous): Mean_Temp_Celsius
+3. Number of Wildfires in the US each year (continuous): Num_Fires
+4. Number of Acres Burned in the US each year (continuous): Acres_Burned
+5. Years with Extreme Heat Wave in the US (categorical): Extreme_Heat_Wave
+6. Years with High Unemployment in the US (categorical): High_Unemployment
+
+Load data:
+```{r, message=FALSE}
+US_data <- read_csv("wildfire_dataset.csv")
+```
+
+```{r}
+US_data
+```
+## Model_1: Initial linear regression model
+
+The linear regression model from last assignment predicts the number of wildfires each year based on the annual rainfall, mean annual temperature, number of acres burned, whether the year has extreme heat wave, and whether the year has high unemployment rate. Adjusted R-squared value is 0.3627. 
+
+```{r}
+model_1 <- lm(Num_Fires ~ Total_Rainfall_mm + Mean_Temp_Celsius + High_Unemployment + Acres_Burned + Extreme_Heat_Wave, data = US_data)
+
+summary(model_1)
+```
+
+## Model_2: Log transformation 
+
+I tested to see if log-transforming the Annual Rainfall variable would improve the model fit, since percentage increases matter as much as absolute increases. Results show that the model fit (adjusted R-squared) slightly improved from 0.3627 (model_1) to 0.363. 
+
+```{r}
+model_2 <- lm(Num_Fires ~ log(Total_Rainfall_mm) + Mean_Temp_Celsius + High_Unemployment + Acres_Burned + Extreme_Heat_Wave, data = US_data)
+
+summary(model_2)
+```
+
+## Model_3: Converting continuous variable to categorical variable 
+
+Mean Annual Temperature might relate to the number of wildfires every year, but in a more step-wise rather than linear manner. I categorized the continuous variable, mean annual temperature, into 3 categories (median temp, low temp, and high temp) to see if the model fit improves. 
+
+Results show that the adjusted R-squared value actually decreases from 0.363 (model_2) to 0.3446 when I convert mean annual temperature to a categorical variable. 
+
+```{r}
+median(US_data$Mean_Temp_Celsius)
+```
+
+```{r}
+US_data <- US_data %>%
+  mutate(Categorical_Temp = case_when(Mean_Temp_Celsius == 7.064091 ~ "median temp",
+                               Mean_Temp_Celsius < 7.064091 ~ "low temp",
+                               Mean_Temp_Celsius > 7.064091 ~ "high temp"))
+
+model_3 <- lm(Num_Fires ~ log(Total_Rainfall_mm) + Categorical_Temp + High_Unemployment + Acres_Burned + Extreme_Heat_Wave, data = US_data)
+
+summary(model_3)
+```
+
+
+## Model_4: Adding an interaction term
+
+I added Extreme_Heat_Wave (whether a year has extreme heat wave or not) as an interaction term because I am guessing that independent variables such as annual rainfall, mean annual temperature, or number of acres burned might depend on whether the year has extreme heat wave. 
+
+Adding the interaction term does increase the adjusted R-squared value from 0.4 (model_2) to 0.3758. However, the coefficient estimates after adding the interation terms are all not statistically significant at a 95% confidence level as the P-values are all a lot higher than 0.05. 
+
+```{r}
+model_4 <- lm(Num_Fires ~ log(Total_Rainfall_mm) + Mean_Temp_Celsius + High_Unemployment + Acres_Burned + Extreme_Heat_Wave +
+                log(Total_Rainfall_mm):Extreme_Heat_Wave +
+                Mean_Temp_Celsius:Extreme_Heat_Wave +
+                High_Unemployment:Extreme_Heat_Wave +
+                Acres_Burned:Extreme_Heat_Wave,
+                data = US_data)
+
+summary(model_4)
+```
+
+## Visualizing models results 
+
+Graph comparing R-squared values for models 1 through 4: 
+
+```{r}
+all_models_Rsquared <- tibble(model = c(1, 2, 3, 4),
+                   R_squared = c(summary(model_1)$adj.r.squared,
+                                summary(model_2)$adj.r.squared,
+                                summary(model_3)$adj.r.squared,
+                                summary(model_4)$adj.r.squared))
+
+ggplot(all_models_Rsquared, aes(x = model, y = R_squared)) +
+  geom_line() +
+  scale_x_continuous(name = "",
+                   breaks = breaks <- seq(1, 4, by = 1),
+                   labels = paste("Model", breaks)) +
+  scale_y_continuous(name = "Adjusted R-squared value") +
+  theme_light()
+```
+
+Table comparing initial linear regression model (model_1) with model with interaction term (model_4) because model 4 is the best fitting model based on its high adjusted R-squared value. 
+
+```{r}
+coefficient_names <- c("Annual Rainfall (mm)" = "Total_Rainfall_mm",
+                       "Annual Rainfall (mm)\n(log-transformed)" = "log(Total_Rainfall_mm)",
+                 "Mean Annual Temperature (cels)" = "Mean_Temp_Celsius",
+                 "Year with High Unemployment Rate\n(compared to year without high unemployment rate)" = "High_UnemploymentTRUE",
+                 "Acres Burned" = "Acres_Burned",
+                 "Year with Extreme Heat Wave\n(compared to year without extreme heat wave" = "Extreme_Heat_WaveTRUE",
+"Interaction:\nextreme heat wave and\nlog-transformed annual rainfall" = "log(Total_Rainfall_mm):Extreme_Heat_WaveTRUE",
+"Interaction:\nextreme heat wave and\nmean annual temperature (cels)" = "Mean_Temp_Celsius:Extreme_Heat_WaveTRUE",
+"Interaction:\nextreme heat wave and\nyear with high unemployment rate" = "High_UnemploymentTRUE",
+"Interaction:\nextreme heat wave and\nacres burned" = "Acres_Burned:Extreme_Heat_WaveTRUE")
+
+export_summs(model_1, model_4, 
+             error_format = "(p = {p.value})",
+             error_pos = "same",
+             model.names = c("Initial model", "Preferred model"),
+             coefs = coefficient_names)
+```
+
